@@ -1,0 +1,162 @@
+---
+title: "Chocolate Bar Rating Analysis"
+author: "Joel Nyongesa"
+date: "2023-02-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction.
+In this project, I will be performing data analysis the `flavors of cacao` dataset in R. The dataset is available on Kaggle, via [this link](https://www.kaggle.com/datasets/rtatman/chocolate-bar-ratings). I will be using the 6 phases of data analysis:
+
+
+- Ask.
+- Prepare.
+- Process.
+- Analyze.
+- Share.
+- Act.
+
+## 1. Ask.
+Chocolate is one of the most popular candies in the world. Each year, residents of the United States collectively eat more than 2.8 billions pounds. This analysis aims to answer a few business questions to determine the best chocolate producing countries, and the most preferred chocolate types.
+
+The objective of this analysis is to answer the following questions:
+
+- What coffee manufacturing companies received the highest ratings, and where are the companies located?
+- Which year had the maximum ratings ratings?
+- Which broad bean has the highest rating?
+
+## 2. Prepare.
+The data was stored in the form of a csv file. The data had nine columns which are:
+
+
+- Company.
+- Specific ben origin.
+- Ref.
+- Review.
+- Cocoa.
+- Company location.
+- Rating.
+- Bean.
+- Broad bean.
+
+The dataset is licenced under [CCO public domain](https://creativecommons.org/publicdomain/zero/1.0/). 
+
+## 3. Process.
+Data analysis will be done using R, with documentation done using R Markdown.
+The data cleaning process is as follows:
+
+- First loading the dataset.
+- Renaming the columns.
+- Changing the data types to a suitable format.
+
+```{r loading the required packages}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+```{r loading the dataset}
+cocoa_flavors <- read.csv("flavors_of_cacao.csv")
+```
+
+Now let us inspect the dataset, viewing the structure, first few rows, column names and making any changes that will be necessary.
+```{r first few rows}
+head(cocoa_flavors)
+```
+
+The structure of the dataset.
+```{r structure of the dataset}
+str(cocoa_flavors)
+```
+
+The column names
+```{r column names}
+colnames(cocoa_flavors)
+```
+
+It is necessary to rename the column names of the dataset to ensure consistency. [Reference](https://www.datanovia.com/en/lessons/rename-data-frame-columns-in-r/).
+```{r renaming the column names}
+cocoa_flavors <- cocoa_flavors %>% 
+  rename(
+    company = Company...Maker.if.known.,
+    bean_origin = Specific.Bean.Origin.or.Bar.Name,
+    review_date = Review.Date,
+    cocoa_percent = Cocoa.Percent,
+    company_location = Company.Location,
+    rating = Rating,
+    bean_type = Bean.Type,
+    broad_bean_origin = Broad.Bean.Origin
+  )
+
+# viewing the changes once more.
+colnames(cocoa_flavors)
+```
+Next will be confirmig the data types of the columns.
+```{r data types}
+str(cocoa_flavors)
+```
+Converting the review_date type to date.
+```{r review_date to date}
+cocoa_flavors$review_date <- as.Date(as.character(cocoa_flavors$review_date), format = "%Y")
+cocoa_flavors$review_date <- format(as.Date(cocoa_flavors$review_date), "%Y")
+```
+
+
+Viewing the structure once more.
+```{r structure after changes}
+str(cocoa_flavors)
+```
+## 4. Analysis.
+The analysis is done objective wise.
+
+*1. The coffee manufacturing companies with the highest ratings.*
+
+To solve this, a rating of 3.5 and above is considered a high rating, while a rating of belo 3.5 is considered a low rating.
+```{r companies with highest ratings}
+cocoa_flavors %>% 
+  filter(rating >= 3.5) %>% 
+  group_by(company) %>% 
+  summarise(mean_rating = mean(rating)) %>% 
+  arrange(desc(mean_rating), n=10)
+```
+
+
+*2. Year with maximum highest rating.*
+```{r year with max rating}
+cocoa_flavors %>% 
+  filter(rating >= 3.5) %>% 
+  group_by(review_date) %>% 
+  summarize(mean_rating = mean(rating)) %>% 
+  arrange(desc(mean_rating))
+```
+
+
+*3. Broad bean with highest rating*
+```{r broad bean with highest mean rating}
+cocoa_flavors %>% 
+  filter(rating>=3.5) %>% 
+  group_by(broad_bean_origin) %>% 
+  summarise(mean_rating = mean(rating)) %>% 
+  arrange(desc(mean_rating))
+```
+
+
+*4. Countries of origin for companies with highest ratings.*
+```{r countries with best ratings}
+cocoa_flavors %>% 
+  filter(rating>=3.5) %>% 
+  group_by(company_location) %>% 
+  summarise(mean_rating = mean(rating)) %>% 
+  arrange(desc(mean_rating))
+```
+
+
+
+## 5. Share.
+In this phase, I will create visualizations to best share the results of my analysis. The data is exported for visualizations in Tableau.
+
